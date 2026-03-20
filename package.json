@@ -1,12 +1,15 @@
 {
   "name": "mail-agent",
-  "version": "0.1.0",
-  "description": "Mail Agent watcher plugin for OpenClaw — push email notifications to Telegram",
+  "version": "0.2.0",
+  "description": "AI-powered Gmail monitor for OpenClaw — push important emails to Telegram",
   "main": "index.ts",
   "openclaw": {
     "extensions": ["./index.ts"]
   },
+  "keywords": ["openclaw", "gmail", "email", "telegram", "ai", "pubsub"],
+  "license": "MIT",
   "dependencies": {
-    "ws": "*"
+    "@google-cloud/pubsub": "*",
+    "googleapis": "*"
   }
 }

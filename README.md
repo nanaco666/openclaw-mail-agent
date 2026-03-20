@@ -1,63 +1,59 @@
 # mail-agent — OpenClaw Plugin
 
-Bridges [mail-agent](https://github.com/nanaco666/mail-agent) with [OpenClaw](https://openclaw.ai).
+AI-powered Gmail monitor for [OpenClaw](https://openclaw.ai). Watches your inbox via Google Pub/Sub, classifies emails with an LLM, and pushes important ones to Telegram.
 
-When mail-agent classifies an incoming email as important, this plugin forwards the notification to your Telegram via OpenClaw's configured bot — no extra API keys needed.
+No separate server. Runs entirely inside OpenClaw.
 
-## Prerequisites
+## Requirements
 
-- [OpenClaw](https://openclaw.ai) installed and running
-- Telegram bot configured in OpenClaw (`openclaw channels telegram`)
-- mail-agent running locally (default: `ws://localhost:3000`)
+- [OpenClaw](https://openclaw.ai) with Telegram configured
+- [gog](https://gogcli.sh) — Gmail CLI, authenticated
+- Google Cloud project with Gmail API + Pub/Sub enabled
+- OpenAI (or compatible) API key
 
-## Install
+## Quick start
+
+Install the `mail-agent` skill in OpenClaw — it will walk you through the full setup step by step.
+
+Or manually:
 
 ```bash
-# 1. Clone mail-agent (or just the plugin folder)
-git clone https://github.com/nanaco666/mail-agent
-cd mail-agent
+openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/heads/main.tar.gz
 
-# 2. Install the plugin into OpenClaw
-openclaw plugins install ./openclaw-plugin --link
+openclaw plugins config mail-agent --set chatId=YOUR_TELEGRAM_CHAT_ID
+openclaw plugins config mail-agent --set gcpProject=YOUR_GCP_PROJECT_ID
+openclaw plugins config mail-agent --set pubsubSubscription=mail-agent-inbox-sub
+openclaw plugins config mail-agent --set llmApiKey=sk-...
 
-# 3. Configure: set your Telegram chat ID
-openclaw plugins config mail-agent --set chatId=YOUR_CHAT_ID
-
-# 4. Restart the gateway
 openclaw gateway restart
-```
-
-To find your Telegram chat ID, message [@userinfobot](https://t.me/userinfobot) on Telegram — it replies with your numeric user ID. For a group/channel, forward a message from the group to [@userinfobot](https://t.me/userinfobot).
-
-## Configuration
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `chatId` | **required** | Telegram chat/user/group ID to send notifications to |
-| `mailAgentUrl` | `ws://localhost:3000` | WebSocket URL of your mail-agent instance |
-
-Set config via OpenClaw:
-
-```bash
-openclaw plugins config mail-agent --set chatId=-1001234567890
-openclaw plugins config mail-agent --set mailAgentUrl=ws://192.168.1.10:3000
 ```
 
 ## How it works
 
 ```
-Gmail → mail-agent pipeline → agent_push (WebSocket)
-                                    ↓
-                            OpenClaw plugin (this)
-                                    ↓
-                          Telegram (via OpenClaw bot)
+Gmail → Google Pub/Sub → plugin (inside OpenClaw)
+                               ↓
+                       Gmail history.list
+                               ↓
+                        LLM classification
+                               ↓
+                   Telegram (via OpenClaw bot)
 ```
 
-The plugin connects to mail-agent's WebSocket server and listens for `agent_push` messages. These are only emitted when the pipeline decides an email is important enough to notify. The plugin then forwards the message content to Telegram using OpenClaw's already-configured bot.
+Gmail push notifications via Pub/Sub → plugin gets notified instantly → fetches the email → LLM decides important or not → sends to Telegram if important.
 
-## Uninstall
+## Configuration
 
-```bash
-openclaw plugins uninstall mail-agent
-openclaw gateway restart
-```
+| Key | Required | Default | Description |
+|-----|----------|---------|-------------|
+| `chatId` | ✓ | — | Telegram chat/group ID |
+| `gcpProject` | ✓ | — | Google Cloud project ID |
+| `pubsubSubscription` | ✓ | `mail-agent-inbox-sub` | Pub/Sub subscription name |
+| `llmApiKey` | — | — | OpenAI API key (skips classification if unset) |
+| `llmBaseUrl` | — | `https://api.openai.com/v1` | LLM endpoint |
+| `llmModel` | — | `gpt-4o-mini` | Classification model |
+| `credentialsPath` | — | — | Path to Google credentials JSON |
+
+## License
+
+MIT

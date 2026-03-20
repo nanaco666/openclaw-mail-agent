@@ -1,73 +1,161 @@
 ---
 name: mail-agent
-description: Install and configure the mail-agent OpenClaw plugin. Use when the user wants to connect mail-agent to Telegram, receive email notifications in Telegram, set up mail-agent Telegram push, bridge mail-agent with OpenClaw, or asks to install the mail-agent plugin.
+description: Set up AI-powered Gmail monitoring in OpenClaw. Watches inbox via Google Pub/Sub and pushes important emails to Telegram. Use when the user wants to install mail-agent, set up email notifications, configure Gmail monitoring, or troubleshoot why email alerts aren't arriving.
 ---
 
-Installs and configures the [mail-agent](https://github.com/nanaco666/mail-agent) OpenClaw plugin, which forwards important email notifications to Telegram via OpenClaw's configured bot.
+Sets up mail-agent — an AI Gmail monitor that runs inside OpenClaw and delivers important emails to your Telegram.
 
-## Prerequisites check
+When invoked, walk the user through every step below in order. Check each prerequisite before proceeding. Do not skip steps.
 
-Before installing, verify:
+---
+
+## Step 1 — Check gog
 
 ```bash
-# mail-agent must be running
-curl -s http://localhost:3000/api/emails?limit=1
-
-# Telegram must be configured in OpenClaw
-openclaw channels telegram status
+gog auth list
 ```
 
-If mail-agent is not running, tell the user to start it first.
-If Telegram is not configured, run `/telegram:configure` first.
+If no accounts are listed, stop and tell the user to set up gog first:
+```bash
+gog auth credentials /path/to/client_secret.json
+gog auth add you@gmail.com --services gmail
+```
 
-## Install
+Note which Gmail account is being watched (`GOG_ACCOUNT` or the default).
+
+---
+
+## Step 2 — Check Google Cloud
+
+```bash
+gcloud auth application-default print-access-token 2>&1 | head -1
+```
+
+If this fails (not logged in):
+```bash
+gcloud auth application-default login
+```
+
+Check if a suitable GCP project exists:
+```bash
+gcloud projects list
+```
+
+If no project exists, create one:
+```bash
+gcloud projects create mail-agent-YOUR_NAME --name "Mail Agent"
+gcloud config set project mail-agent-YOUR_NAME
+```
+
+If a project exists, set it:
+```bash
+gcloud config set project YOUR_PROJECT_ID
+```
+
+Note the project ID — needed for plugin config.
+
+---
+
+## Step 3 — Enable APIs
+
+```bash
+gcloud services enable gmail.googleapis.com pubsub.googleapis.com
+```
+
+---
+
+## Step 4 — Create Pub/Sub topic and subscription
+
+```bash
+gcloud pubsub topics create mail-agent-inbox
+gcloud pubsub subscriptions create mail-agent-inbox-sub --topic=mail-agent-inbox
+```
+
+Grant Gmail permission to publish to the topic:
+```bash
+gcloud pubsub topics add-iam-policy-binding mail-agent-inbox \
+  --member="serviceAccount:gmail-api-push@system.gserviceaccount.com" \
+  --role="roles/pubsub.publisher"
+```
+
+---
+
+## Step 5 — Install the plugin
 
 ```bash
 openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/heads/main.tar.gz
 ```
 
-## Configure
+---
 
-The plugin requires a Telegram chat ID to deliver notifications to.
+## Step 6 — Configure
 
-To find your chat ID: message [@userinfobot](https://t.me/userinfobot) on Telegram — it replies with your numeric ID.
-
+Set required values (replace placeholders):
 ```bash
-openclaw plugins config mail-agent --set chatId=YOUR_CHAT_ID
+openclaw plugins config mail-agent --set chatId=YOUR_TELEGRAM_CHAT_ID
+openclaw plugins config mail-agent --set gcpProject=YOUR_GCP_PROJECT_ID
+openclaw plugins config mail-agent --set pubsubSubscription=mail-agent-inbox-sub
 ```
 
-If mail-agent runs on a non-default port or remote host:
-
+Set LLM for email classification (recommended — skip to use pass-through):
 ```bash
-openclaw plugins config mail-agent --set mailAgentUrl=ws://HOST:PORT
+openclaw plugins config mail-agent --set llmApiKey=sk-...
+openclaw plugins config mail-agent --set llmModel=gpt-4o-mini
 ```
 
-## Activate
+To find your Telegram chat ID: message @userinfobot on Telegram.
+
+---
+
+## Step 7 — Restart OpenClaw
 
 ```bash
 openclaw gateway restart
 ```
 
-After restart, verify the plugin connected:
-
+Wait a few seconds, then check logs:
 ```bash
-openclaw plugins list
 openclaw gateway logs | grep mail-agent
 ```
 
-You should see: `mail-agent: connected`
-
-## How it works
-
+Expected output:
 ```
-Gmail → mail-agent pipeline → agent_push (WebSocket)
-                                    ↓
-                          OpenClaw mail-agent plugin
-                                    ↓
-                        Telegram (via OpenClaw bot)
+mail-agent: watch registered, historyId=...
+mail-agent: watching inbox
 ```
 
-Only emails the pipeline classifies as important trigger a notification. Newsletters, automated mail, and low-priority items are silently filtered.
+If you see `watch registration failed`, re-check Step 3 and Step 4.
+
+---
+
+## Step 8 — Test
+
+Send a test email to the watched Gmail account with urgent content, e.g.:
+
+> Subject: Urgent: server is down
+> Body: Production database crashed, users can't log in.
+
+Wait up to 60 seconds. A notification should arrive in Telegram.
+
+If nothing arrives after 2 minutes:
+```bash
+openclaw gateway logs | grep mail-agent
+```
+
+Common issues:
+- `telegram runtime not available` → restart OpenClaw gateway
+- `watch registration failed` → APIs not enabled or wrong project
+- `subscription error` → subscription name mismatch, check Step 4
+- No logs at all → plugin not loaded, check `openclaw plugins list`
+
+---
+
+## Reconfigure / update settings
+
+```bash
+openclaw plugins config mail-agent --set KEY=VALUE
+openclaw gateway restart
+```
 
 ## Uninstall
 

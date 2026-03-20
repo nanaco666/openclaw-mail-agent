@@ -1,20 +1,43 @@
 {
   "id": "mail-agent",
   "name": "Mail Agent",
-  "description": "Connects mail-agent watcher to OpenClaw — streams important email notifications to Telegram",
-  "version": "0.1.0",
+  "description": "AI-powered Gmail monitor. Watches your inbox via Google Pub/Sub, classifies emails with LLM, pushes important ones to Telegram. Requires gog + GCP.",
+  "version": "0.2.0",
   "entry": "./index.ts",
   "configSchema": {
     "type": "object",
+    "required": ["chatId", "gcpProject", "pubsubSubscription"],
     "properties": {
-      "mailAgentUrl": {
-        "type": "string",
-        "description": "mail-agent WebSocket URL",
-        "default": "ws://localhost:3000"
-      },
       "chatId": {
         "type": "string",
-        "description": "Telegram chat ID to deliver notifications to"
+        "description": "Telegram chat/group ID to deliver notifications to"
+      },
+      "gcpProject": {
+        "type": "string",
+        "description": "Google Cloud project ID"
+      },
+      "pubsubSubscription": {
+        "type": "string",
+        "description": "Pub/Sub subscription name",
+        "default": "mail-agent-inbox-sub"
+      },
+      "llmApiKey": {
+        "type": "string",
+        "description": "OpenAI (or compatible) API key for email classification"
+      },
+      "llmBaseUrl": {
+        "type": "string",
+        "description": "LLM API base URL",
+        "default": "https://api.openai.com/v1"
+      },
+      "llmModel": {
+        "type": "string",
+        "description": "Model for classification",
+        "default": "gpt-4o-mini"
+      },
+      "credentialsPath": {
+        "type": "string",
+        "description": "Path to Google credentials JSON (optional if ADC already configured)"
       }
     }
   }
