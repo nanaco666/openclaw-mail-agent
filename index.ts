@@ -224,12 +224,9 @@ export default function register(api: OpenClawPluginApi) {
         return;
       }
 
-      if (cfg.credentialsPath) {
-        process.env.GOOGLE_APPLICATION_CREDENTIALS = cfg.credentialsPath;
-      }
-
       const auth = new google.auth.GoogleAuth({
         scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+        ...(cfg.credentialsPath ? { keyFilename: cfg.credentialsPath } : {}),
       });
       const gmail = google.gmail({ version: "v1", auth });
 
