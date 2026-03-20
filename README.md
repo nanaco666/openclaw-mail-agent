@@ -18,7 +18,7 @@ Install the `mail-agent` skill in OpenClaw — it will walk you through the full
 Or manually:
 
 ```bash
-openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/tags/v0.2.0.tar.gz
+openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/tags/v0.2.1.tar.gz
 
 openclaw plugins config mail-agent --set chatId=YOUR_TELEGRAM_CHAT_ID
 openclaw plugins config mail-agent --set gcpProject=YOUR_GCP_PROJECT_ID

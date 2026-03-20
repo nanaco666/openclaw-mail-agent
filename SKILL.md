@@ -86,7 +86,7 @@ gcloud pubsub topics add-iam-policy-binding mail-agent-inbox \
 ## Step 5 — Install the plugin
 
 ```bash
-openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/tags/v0.2.0.tar.gz
+openclaw plugins install https://github.com/nanaco666/openclaw-mail-agent/archive/refs/tags/v0.2.1.tar.gz
 ```
 
 ---
