@@ -1,9 +1,11 @@
 {
   "id": "mail-agent",
   "name": "Mail Agent",
-  "description": "AI-powered Gmail monitor. Watches your inbox via Google Pub/Sub, classifies emails with LLM, pushes important ones to Telegram. Requires gog + GCP.",
+  "description": "AI-powered Gmail monitor. Watches your inbox via Google Pub/Sub, classifies emails with LLM, pushes important ones to Telegram. Requires gog + gcloud + GCP project.",
   "version": "0.2.0",
   "entry": "./index.ts",
+  "bins": ["gog", "gcloud"],
+  "requiredEnv": [],
   "configSchema": {
     "type": "object",
     "required": ["chatId", "gcpProject", "pubsubSubscription"],
@@ -23,7 +25,7 @@
       },
       "llmApiKey": {
         "type": "string",
-        "description": "OpenAI (or compatible) API key for email classification"
+        "description": "OpenAI (or compatible) API key for email classification. Stored in OpenClaw plugin config — confirm your OpenClaw config is secured."
       },
       "llmBaseUrl": {
         "type": "string",
@@ -37,7 +39,7 @@
       },
       "credentialsPath": {
         "type": "string",
-        "description": "Path to Google credentials JSON (optional if ADC already configured)"
+        "description": "Path to Google credentials JSON (optional if ADC already configured via gcloud)"
       }
     }
   }

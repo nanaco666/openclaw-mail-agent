@@ -1,7 +1,7 @@
 {
   "name": "mail-agent",
   "version": "0.2.0",
-  "description": "AI-powered Gmail monitor for OpenClaw — push important emails to Telegram",
+  "description": "AI-powered Gmail monitor for OpenClaw — classifies emails and pushes important ones to Telegram",
   "main": "index.ts",
   "openclaw": {
     "extensions": ["./index.ts"]
@@ -9,7 +9,7 @@
   "keywords": ["openclaw", "gmail", "email", "telegram", "ai", "pubsub"],
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/pubsub": "*",
-    "googleapis": "*"
+    "@google-cloud/pubsub": "5.3.0",
+    "googleapis": "171.4.0"
   }
 }
