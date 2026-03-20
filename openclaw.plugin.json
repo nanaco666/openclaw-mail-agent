@@ -1,0 +1,21 @@
+{
+  "id": "mail-agent",
+  "name": "Mail Agent",
+  "description": "Connects mail-agent watcher to OpenClaw — streams important email notifications to Telegram",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "mailAgentUrl": {
+        "type": "string",
+        "description": "mail-agent WebSocket URL",
+        "default": "ws://localhost:3000"
+      },
+      "chatId": {
+        "type": "string",
+        "description": "Telegram chat ID to deliver notifications to"
+      }
+    }
+  }
+}

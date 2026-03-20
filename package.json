@@ -1,0 +1,12 @@
+{
+  "name": "mail-agent",
+  "version": "0.1.0",
+  "description": "Mail Agent watcher plugin for OpenClaw — push email notifications to Telegram",
+  "main": "index.ts",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
+  "dependencies": {
+    "ws": "*"
+  }
+}
