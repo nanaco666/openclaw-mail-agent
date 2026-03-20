@@ -1,6 +1,9 @@
 ---
 name: mail-agent
+version: 0.2.0
 description: Set up AI-powered Gmail monitoring in OpenClaw. Watches inbox via Google Pub/Sub and pushes important emails to Telegram. Use when the user wants to install mail-agent, set up email notifications, configure Gmail monitoring, or troubleshoot why email alerts aren't arriving.
+homepage: https://github.com/nanaco666/openclaw-mail-agent
+metadata: {"clawdbot":{"emoji":"📬","requires":{"bins":["gog","gcloud"]},"install":[{"id":"gog","kind":"brew","formula":"steipete/tap/gogcli","bins":["gog"],"label":"Install gog (brew)"},{"id":"gcloud","kind":"brew","formula":"google-cloud-sdk","bins":["gcloud"],"label":"Install gcloud (brew)"}]}}
 ---
 
 Sets up mail-agent — an AI Gmail monitor that runs inside OpenClaw and delivers important emails to your Telegram.
